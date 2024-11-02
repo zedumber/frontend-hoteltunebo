@@ -69,8 +69,18 @@ export default {
           password: this.password,
         });
         localStorage.setItem("token", response.data.access_token);
+
         this.showTurnoModal = true;
         this.rolUsuario = response.data.user.roll; // Almacena el rol
+        // Redirige según el rol del usuario
+        if (this.rolUsuario === "recepcionista") {
+          this.$router.push("/calendario"); // Página específica para recepcionistas
+        } else if (this.rolUsuario === "chef") {
+          this.$router.push("/restaurante-bar"); // Página específica para administradores
+        } else {
+          // Si el rol no coincide, redirige a una página por defecto
+          this.$router.push("/panel");
+        }
       } catch (error) {
         console.error("Error en el login:", error.response.data);
       }

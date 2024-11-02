@@ -6,7 +6,7 @@ import axios from "axios";
 const instance = axios.create({
   baseURL: "http://172.233.174.221:8001/api", // Asegúrate de que esta URL sea correcta
   // baseURL: 'http://194.195.210.164:8000/api', // Asegúrate de que esta URL sea correcta
-  timeout: 11000, // Aumenta el tiempo de espera para evitar problemas de red lentos
+  timeout: 12000, // Aumenta el tiempo de espera para evitar problemas de red lentos
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
