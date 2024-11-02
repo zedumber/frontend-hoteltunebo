@@ -18,9 +18,9 @@
     <!-- Modal para seleccionar turno -->
     <div v-if="showTurnoModal" class="modal-overlay">
       <div class="modal-content">
+        <button @click="showTurnoModal = false">Cerrar</button>
         <h3>Selecciona tu turno</h3>
         <p>Rol: {{ rolUsuario }}</p>
-        <!-- Añade esta línea -->
 
         <!-- Mostrar selección de turno si no hay turno activo -->
         <div v-if="!turnoExistente">
@@ -57,7 +57,7 @@ export default {
       showTurnoModal: false,
       selectedTurno: "",
       turnoExistente: false,
-      rolUsuario: "", // Añade esta línea
+      rolUsuario: "",
       mensajeTurnoActivo: "",
     };
   },
@@ -70,17 +70,8 @@ export default {
         });
         localStorage.setItem("token", response.data.access_token);
 
+        this.rolUsuario = response.data.user.roll;
         this.showTurnoModal = true;
-        this.rolUsuario = response.data.user.roll; // Almacena el rol
-        // Redirige según el rol del usuario
-        if (this.rolUsuario === "recepcionista") {
-          this.$router.push("/calendario"); // Página específica para recepcionistas
-        } else if (this.rolUsuario === "chef") {
-          this.$router.push("/restaurante-bar"); // Página específica para administradores
-        } else {
-          // Si el rol no coincide, redirige a una página por defecto
-          this.$router.push("/panel");
-        }
       } catch (error) {
         console.error("Error en el login:", error.response.data);
       }
@@ -90,23 +81,12 @@ export default {
       const token = localStorage.getItem("token");
 
       try {
-        if (this.rolUsuario === "recepcionista") {
-          // Lógica para el recepcionista
-          await axios.post(
-            "/auth/turnos/store-turno", // Nueva API para recepcionistas
-            { turno_id: this.selectedTurno },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-        } else {
-          // Lógica para otros roles (por ejemplo, Administrador)
-          await axios.post(
-            "/auth/turnos/store-turno",
-            { turno_id: this.selectedTurno },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-        }
-
-        this.$router.push("/panel");
+        await axios.post(
+          "/auth/turnos/store-turno",
+          { turno_id: this.selectedTurno },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        this.confirmarTurnoYRedirigir();
       } catch (error) {
         if (error.response && error.response.status === 409) {
           this.turnoExistente = true;
@@ -117,43 +97,50 @@ export default {
       }
     },
 
+    async confirmarTurnoYRedirigir() {
+      this.showTurnoModal = false;
+
+      // Redirigir según el rol del usuario
+      if (this.rolUsuario === "recepcionista") {
+        this.$router.push("/calendario");
+      } else if (this.rolUsuario === "chef") {
+        this.$router.push("/restaurante-bar");
+      } else {
+        this.$router.push("/panel");
+      }
+    },
+
     async retomarTurno() {
       const token = localStorage.getItem("token");
 
-      if (this.rolUsuario === "recepcionista") {
+      try {
         await axios.post(
-          `/auth/turnos/retomar-turno`, // Nueva API para recepcionistas
+          `/auth/turnos/retomar-turno`,
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
-      } else {
-        await axios.post(
-          `/auth/turnos/retomar-turno`, // API para otros roles
-          {},
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        this.confirmarTurnoYRedirigir();
+      } catch (error) {
+        console.error("Error al retomar el turno:", error.response.data);
       }
-      this.$router.push("/panel");
     },
 
     async cerrarYCrearNuevoTurno() {
       const token = localStorage.getItem("token");
 
-      if (this.rolUsuario === "recepcionista") {
+      try {
         await axios.post(
-          `/auth/turnos/cerrar-y-abrir-nuevo`, // Nueva API para recepcionistas
+          `/auth/turnos/cerrar-y-abrir-nuevo`,
           { turno_id: this.selectedTurno },
           { headers: { Authorization: `Bearer ${token}` } }
         );
-      } else {
-        await axios.post(
-          `/auth/turnos/cerrar-y-abrir-nuevo`, // API para otros roles
-          { turno_id: this.selectedTurno },
-          { headers: { Authorization: `Bearer ${token}` } }
+        this.confirmarTurnoYRedirigir();
+      } catch (error) {
+        console.error(
+          "Error al cerrar y crear un nuevo turno:",
+          error.response.data
         );
       }
-
-      this.$router.push("/panel");
     },
   },
 };
@@ -231,5 +218,64 @@ select {
   width: 100%;
   padding: 10px;
   margin: 10px 0;
+}
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Asegura que el modal esté en el frente */
+}
+
+.modal-content {
+  background-color: #ffffff;
+  padding: 20px;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  font-size: 24px;
+  color: #333;
+}
+
+.modal-content p {
+  color: #666;
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.modal-content select {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0 20px 0;
+  font-size: 16px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+}
+
+.modal-content button {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  color: #ffffff;
+  background-color: #007bff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.modal-content button:hover {
+  background-color: #0056b3;
 }
 </style>
