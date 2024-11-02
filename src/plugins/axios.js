@@ -4,9 +4,9 @@ import axios from "axios";
 //export const DEFAULT_CUSTOMER_NAME = "ClientePorDefecto";
 
 const instance = axios.create({
-  baseURL: "http://127.0.0.1:8000/api", // Asegúrate de que esta URL sea correcta
+  baseURL: "http://172.233.174.221:8001/api", // Asegúrate de que esta URL sea correcta
   // baseURL: 'http://194.195.210.164:8000/api', // Asegúrate de que esta URL sea correcta
-  timeout: 10000, // Aumenta el tiempo de espera para evitar problemas de red lentos
+  timeout: 11000, // Aumenta el tiempo de espera para evitar problemas de red lentos
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
