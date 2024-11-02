@@ -1,0 +1,307 @@
+<template>
+  <div>
+    <div class="filter">
+      <label>Filtrar por Fecha de Creación:</label>
+      <input type="date" v-model="fechaInicio" @change="filtrarPorFecha" />
+      <input type="date" v-model="fechaFin" @change="filtrarPorFecha" />
+    </div>
+    <div class="general-total">
+      <h3>Total General: {{ formatCurrency(totalGeneral) }}</h3>
+    </div>
+
+    <h2>Detalles de Reservas</h2>
+    <table class="reservations-table">
+      <thead>
+        <tr>
+          <th>Creado por</th>
+          <th>Cliente</th>
+          <th>Habitación</th>
+          <th>Estado</th>
+          <th>Check-In</th>
+          <th>Check-Out</th>
+          <th>Total Pago</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="reserva in reservasFiltradas" :key="reserva.id">
+          <td>{{ getUserName(reserva.user_id) }}</td>
+          <td>{{ reserva.cliente.nombre }}</td>
+          <td>{{ reserva.habitacion.numero }}</td>
+          <td>{{ reserva.estado }}</td>
+          <td>{{ reserva.fecha_check_in }}</td>
+          <td>{{ reserva.fecha_check_out }}</td>
+          <td>{{ formatCurrency(reserva.total_pago) }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="6">Total Reservas</td>
+          <td>{{ formatCurrency(totalReservas) }}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <h2>Detalles de Bar-Restaurante</h2>
+    <table class="reservations-table">
+      <thead>
+        <tr>
+          <th>Creado por</th>
+          <th>Estado</th>
+          <th>Método de Pago</th>
+          <th>Propina</th>
+          <th>Total Pago</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="pedido in pedidosFiltrados" :key="pedido.id">
+          <td>{{ getUserName(pedido.user_id) }}</td>
+          <td>{{ pedido.estado }}</td>
+          <td>{{ pedido.metodo_pago }}</td>
+          <td>{{ formatCurrency(pedido.propina) }}</td>
+          <td>{{ formatCurrency(pedido.total_original) }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="4">Total Bar-Restaurante</td>
+          <td>{{ formatCurrency(totalPedidos) }}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <h2>Detalles de Nevera</h2>
+    <table class="reservations-table">
+      <thead>
+        <tr>
+          <th>Creado por</th>
+          <th>Estado</th>
+          <th>Método de Pago</th>
+          <th>Total Pago</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="nevera in neverasFiltradas" :key="nevera.id">
+          <td>{{ getUserName(nevera.user_id) }}</td>
+          <td>{{ nevera.pagado }}</td>
+          <td>{{ nevera.metodo_pago }}</td>
+          <td>{{ formatCurrency(nevera.total_original) }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3">Total Nevera</td>
+          <td>{{ formatCurrency(totalNeveras) }}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</template>
+
+<script>
+import axios from "../plugins/axios";
+
+export default {
+  data() {
+    return {
+      reservas: [],
+      pedidos: [],
+      neveras: [],
+      usuarios: [],
+      fechaInicio: "",
+      fechaFin: "",
+    };
+  },
+  computed: {
+    reservasFiltradas() {
+      return this.filtrarPorFecha(this.reservas);
+    },
+    pedidosFiltrados() {
+      return this.filtrarPorFecha(this.pedidos);
+    },
+    neverasFiltradas() {
+      return this.filtrarPorFecha(this.neveras);
+    },
+    totalReservas() {
+      return this.reservasFiltradas.reduce(
+        (total, reserva) => total + parseFloat(reserva.total_pago || 0),
+        0
+      );
+    },
+    totalPedidos() {
+      return this.pedidosFiltrados.reduce(
+        (total, pedido) => total + parseFloat(pedido.total_original || 0),
+        0
+      );
+    },
+    totalNeveras() {
+      return this.neverasFiltradas.reduce(
+        (total, nevera) => total + parseFloat(nevera.total_original || 0),
+        0
+      );
+    },
+    totalGeneral() {
+      return this.totalReservas + this.totalPedidos + this.totalNeveras;
+    },
+  },
+  mounted() {
+    this.fetchReservas();
+    this.fetchPedidos();
+    this.fetchUsuarios();
+    this.fetchNevera();
+  },
+  methods: {
+    async fetchNevera() {
+      try {
+        const response = await axios.get("/auth/historial-inventarios");
+        this.neveras = response.data;
+      } catch (error) {
+        console.error("Error al obtener el consumo de nevera:", error);
+      }
+    },
+    async fetchUsuarios() {
+      try {
+        const response = await axios.get("/auth/user");
+        this.usuarios = response.data;
+      } catch (error) {
+        console.error("Error al obtener los usuarios:", error);
+      }
+    },
+    async fetchReservas() {
+      try {
+        const response = await axios.get("/auth/reserva");
+        this.reservas = Array.isArray(response.data) ? response.data : [];
+      } catch (error) {
+        console.error("Error al obtener las reservas:", error);
+      }
+    },
+    async fetchPedidos() {
+      try {
+        const response = await axios.get("/auth/pedidos");
+        this.pedidos = response.data;
+      } catch (error) {
+        console.error(
+          "Error al obtener el consumo de bar y restaurante:",
+          error
+        );
+      }
+    },
+    getUserName(userId) {
+      const user = this.usuarios.find((usuario) => usuario.id === userId);
+      return user ? user.name : "Desconocido";
+    },
+    formatCurrency(value) {
+      return new Intl.NumberFormat("es-ES", {
+        style: "currency",
+        currency: "COP",
+      }).format(value);
+    },
+    filtrarPorFecha(datos) {
+      if (!Array.isArray(datos)) return [];
+      const fechaInicio = new Date(this.fechaInicio);
+      const fechaFin = new Date(this.fechaFin);
+      return datos.filter((item) => {
+        const fechaCreacion = new Date(item.created_at);
+        return (
+          (!this.fechaInicio || fechaCreacion >= fechaInicio) &&
+          (!this.fechaFin || fechaCreacion <= fechaFin)
+        );
+      });
+    },
+  },
+};
+</script>
+
+<style scoped>
+.filter {
+  margin-bottom: 1rem;
+}
+
+.reservations-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.reservations-table th,
+.reservations-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.reservations-table th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+}
+
+.general-total {
+  margin-top: 2rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: right;
+}
+</style>
+
+<style scoped>
+.container {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.filter label {
+  font-weight: bold;
+  color: #333;
+}
+
+.filter input[type="date"] {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+h2 {
+  font-size: 1.5rem;
+  color: #333;
+}
+
+.reservations-table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow-x: auto;
+}
+
+.reservations-table th,
+.reservations-table td {
+  border: 1px solid #ddd;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.reservations-table th {
+  background-color: #f8f9fa;
+  color: #333;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .filter,
+  .reservations-table th,
+  .reservations-table td {
+    font-size: 0.875rem;
+    padding: 0.5rem;
+  }
+
+  .container h2 {
+    font-size: 1.25rem;
+  }
+}
+</style>
