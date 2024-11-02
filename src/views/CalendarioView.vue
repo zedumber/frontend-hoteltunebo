@@ -2414,7 +2414,7 @@ h3 {
 .dialog {
   display: block !important;
   position: fixed;
-  width: 40vw;
+  width: 90%;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -2431,7 +2431,7 @@ h3 {
   /* padding: 2rem; */
   border-radius: 10px;
   max-width: 600px;
-  width: 100%;
+  width: 87%;
   /* box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); */
 }
 
