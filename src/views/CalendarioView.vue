@@ -2414,7 +2414,7 @@ h3 {
 .dialog {
   display: block !important;
   position: fixed;
-  width: 90%;
+  width: 40%;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -2425,13 +2425,19 @@ h3 {
   border: 2px solid black; /* Grosor de 2px, color negro */
   z-index: 1000;
 }
-
+/* Ajuste de ancho para pantallas pequeñas (cell) */
+@media (max-width: 768px) {
+  /* Puedes ajustar este valor según necesites */
+  .dialog {
+    width: 85%;
+  }
+}
 .dialog-content {
   /* background-color: #ffffff; */
   /* padding: 2rem; */
   border-radius: 10px;
   max-width: 600px;
-  width: 87%;
+  /* width: 87%; */
   /* box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); */
 }
 

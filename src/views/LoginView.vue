@@ -18,7 +18,6 @@
     <!-- Modal para seleccionar turno -->
     <div v-if="showTurnoModal" class="modal-overlay">
       <div class="modal-content">
-        <button @click="showTurnoModal = false">Cerrar</button>
         <h3>Selecciona tu turno</h3>
         <p>Rol: {{ rolUsuario }}</p>
 
@@ -31,6 +30,9 @@
             <option value="3">Turno 3: 6am a 2pm</option>
           </select>
           <button @click="submitTurno">Confirmar Turno</button>
+          <button @click="showTurnoModal = false" class="btn-cerrar">
+            Cerrar
+          </button>
         </div>
 
         <!-- Opciones para turno existente -->
@@ -43,6 +45,19 @@
         </div>
       </div>
     </div>
+    <!-- Modal de notificación -->
+    <div v-if="showNotificationModal" class="modal-overlay">
+      <div class="modal-content">
+        <!-- <button class="close-modal" @click="showNotificationModal = false">
+          &times;
+        </button> -->
+        <h3>{{ messageType === "success" ? "Éxito" : "Error" }}</h3>
+        <p>{{ message }}</p>
+        <button @click="showNotificationModal = false" class="btn-cerrar">
+          Cerrar
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -52,6 +67,9 @@ import axios from "../plugins/axios";
 export default {
   data() {
     return {
+      showNotificationModal: false,
+      message: "",
+      messageType: "success", // "success" o "error"
       email: "",
       password: "",
       showTurnoModal: false,
@@ -73,7 +91,7 @@ export default {
         this.rolUsuario = response.data.user.roll;
         this.showTurnoModal = true;
       } catch (error) {
-        console.error("Error en el login:", error.response.data);
+        this.showNotification("Error en el login", "error", error);
       }
     },
 
@@ -86,13 +104,14 @@ export default {
           { turno_id: this.selectedTurno },
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        this.showNotification("Turno confirmado exitosamente", "success");
         this.confirmarTurnoYRedirigir();
       } catch (error) {
         if (error.response && error.response.status === 409) {
           this.turnoExistente = true;
           this.mensajeTurnoActivo = error.response.data.message;
         } else {
-          console.error("Error al guardar el turno:", error.response.data);
+          this.showNotification("Error al guardar el turno", "error", error);
         }
       }
     },
@@ -119,9 +138,10 @@ export default {
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        this.showNotification("Turno retomado correctamente", "success");
         this.confirmarTurnoYRedirigir();
       } catch (error) {
-        console.error("Error al retomar el turno:", error.response.data);
+        this.showNotification("Error al retomar el turno", "error", error);
       }
     },
 
@@ -134,19 +154,100 @@ export default {
           { turno_id: this.selectedTurno },
           { headers: { Authorization: `Bearer ${token}` } }
         );
+        this.showNotification("Nuevo turno creado correctamente", "success");
         this.confirmarTurnoYRedirigir();
       } catch (error) {
-        console.error(
-          "Error al cerrar y crear un nuevo turno:",
-          error.response.data
+        this.showNotification(
+          "Error al cerrar y crear un nuevo turno",
+          "error",
+          error
         );
       }
+    },
+    showNotification(message, type, error = null) {
+      this.message = message;
+      this.messageType = type;
+      this.showNotificationModal = true;
+      if (error)
+        console.error(message, error.response ? error.response.data : error);
     },
   },
 };
 </script>
-
 <style scoped>
+.dialogg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  /* align-items: center; */
+  z-index: 1000;
+}
+
+.dialog-contentt {
+  display: block !important;
+  position: absolute;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  top: 35%;
+  /* left: 50%; */
+  max-width: 400px;
+  z-index: 1000;
+  border: 2px solid black; /* Grosor de 2px, color negro */
+  width: 80%;
+  /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); */
+  overflow: auto;
+}
+.dialog {
+  display: block !important;
+  position: fixed;
+  width: 40%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgb(255, 255, 255);
+  padding: 20px;
+  z-index: 1000;
+  border-radius: 10px;
+  border: 2px solid black; /* Grosor de 2px, color negro */
+  z-index: 1000;
+}
+/* Ajuste de ancho para pantallas pequeñas (cell) */
+@media (max-width: 768px) {
+  /* Puedes ajustar este valor según necesites */
+  .dialog-contentt {
+    width: 85%;
+  }
+}
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Asegurarse de que el modal esté al frente */
+}
+.modal-content {
+  max-height: 500px;
+  overflow-y: auto; /* Añadir scroll si hay muchos pedidos */
+}
+.dialog-content {
+  /* background-color: #ffffff; */
+  /* padding: 2rem; */
+  border-radius: 10px;
+  max-width: 600px;
+  /* width: 87%; */
+  /* box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); */
+}
 .auth-container {
   max-width: 400px;
   margin: auto;
