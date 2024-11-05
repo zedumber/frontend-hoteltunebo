@@ -999,7 +999,7 @@
           </select>
         </div>
 
-        <button type="submit" class="btn-confirmar">Confirmar Reserva</button>
+        <button type="submit" class="btn btn-primary">Confirmar Reserva</button>
       </form>
     </div>
   </div>
@@ -1284,12 +1284,50 @@ export default {
       usuario: "", // Ejemplo, ID del usuario autenticado
       calendarOptions: {
         plugins: [resourceTimelinePlugin, interactionPlugin],
-        eventClick: this.handleEventClick, // Asegúrate de que esta función esté registrada
-        initialView: "resourceTimelineWeek",
+        // eventClick: this.handleEventClick, // Asegúrate de que esta función esté registrada
+        initialView: "resourceTimelineMonth",
         locale: "es",
         resources: [], // Inicializa vacío
         events: [],
-        resourceLabelDidMount: this.handleResourceClick, // Maneja el clic en la habitación
+        // resourceLabelDidMount: this.handleResourceClick, // Maneja el clic en la habitación
+        // Efecto hover para filas de recursos
+        resourceLabelDidMount: (info) => {
+          // Cambia el color al pasar el mouse
+          info.el.addEventListener("mouseenter", () => {
+            info.el.style.backgroundColor = "#e0e0e0"; // Color al hacer hover
+          });
+          info.el.addEventListener("mouseleave", () => {
+            info.el.style.backgroundColor = ""; // Vuelve al color original
+          });
+
+          // Mantiene la funcionalidad de clic en la habitación
+          this.handleResourceClick(info);
+        },
+        // Efecto hover para eventos
+
+        // Efecto hover para eventos
+        eventDidMount: (info) => {
+          // Agrega la transición
+          info.el.style.transition = "background-color 0.3s ease"; // Suaviza la transición
+
+          // Agrega el efecto hover
+          const originalColor = ""; // Color original o el que tengas configurado
+          const hoverColor = "#d3d3d3"; // Color al hacer hover en el evento
+
+          info.el.addEventListener("mouseenter", () => {
+            info.el.style.backgroundColor = hoverColor; // Cambia el color al hacer hover
+          });
+
+          info.el.addEventListener("mouseleave", () => {
+            info.el.style.backgroundColor = originalColor; // Vuelve al color original
+          });
+
+          // Manejador de clic
+          info.el.addEventListener("click", () => {
+            this.handleEventClick(info); // Llama a la función de clic
+          });
+        },
+
         allDaySlot: true,
         slotDuration: { days: 1 },
         //estilos del calendario
@@ -1299,12 +1337,15 @@ export default {
         slotLabelFormat: {
           weekday: "short",
           day: "numeric",
+          month: "short",
         },
         headerToolbar: {
           left: "prev,next today",
           center: "title",
           right: "resourceTimelineWeek,resourceTimelineMonth",
         },
+        // Configuración para forzar el orden en base a `title`
+        resourceOrder: "title",
       },
 
       modalConsumoVisible: false, // Controla la visibilidad del modal de consumo
@@ -1734,6 +1775,7 @@ export default {
         this.message = "Pagos realizados exitosamente.";
         this.showNotificationModal = true;
         this.mostrarEgresos(); // Actualizar los egresos
+        this.obtenerBalanceTotal(); // Actualizar el balance total
 
         // Reiniciar el formulario
         this.reiniciarFormulario();
@@ -1833,6 +1875,7 @@ export default {
 
           // Mostrar mensaje de éxito
           alert("Pago registrado exitosamente.");
+          this.obtenerBalanceTotal();
 
           // Reiniciar los valores de montoPago y metodoPago
           this.montoPago = 0;
@@ -2181,20 +2224,40 @@ export default {
     async fetchHabitaciones() {
       try {
         const response = await axios.get("/auth/habitaciones"); // Cambia la URL según sea necesario
-        // Mapea los datos de habitaciones para que se adapten al formato que espera FullCalendar
-        this.calendarOptions.resources = response.data.map((habitacion) => ({
-          id: habitacion.id, // Usa el id de la habitación
-          title: `Hab. ${habitacion.numero}`, // Título que muestra el número de habitación
-        }));
-        // También mapea los datos para el array de habitaciones
-        this.habitaciones = response.data.map((habitacion) => ({
+
+        // Ordenar las habitaciones por el número en el frontend
+        const habitacionesOrdenadas = response.data.sort(
+          (a, b) => a.numero - b.numero
+        );
+
+        // Imprime en consola para verificar el orden
+        console.log("Habitaciones ordenadas:", habitacionesOrdenadas);
+
+        // Asigna los datos ordenados a las opciones de recursos
+        this.calendarOptions.resources = habitacionesOrdenadas.map(
+          (habitacion, index) => ({
+            id: habitacion.id,
+            title: `Hab. ${habitacion.numero}`,
+            _order: index, // Campo para forzar el orden
+          })
+        );
+
+        // También actualiza el array de habitaciones
+        this.habitaciones = habitacionesOrdenadas.map((habitacion) => ({
           id: habitacion.id,
-          nombre: `Hab. ${habitacion.numero}`, // Asigna el número de habitación como nombre
+          nombre: `Hab. ${habitacion.numero}`,
         }));
+
+        // Refresca manualmente los recursos de FullCalendar
+        if (this.$refs.calendar) {
+          // Refresca FullCalendar y evita que ordene los recursos
+          this.$refs.calendar.refetchResources();
+        }
       } catch (error) {
         console.error("Error al obtener habitaciones:", error);
       }
     },
+
     async fetchReservas() {
       try {
         const response = await axios.get("/auth/reserva/todas");
@@ -2337,6 +2400,20 @@ export default {
 };
 </script>
 <style>
+.fc-event:hover {
+  background-color: #d3d3d3 !important; /* Asegúrate de usar !important si es necesario */
+  transition: background-color 0.3s ease; /* Para la transición */
+}
+
+/* Aplica un fondo más oscuro a las filas impares */
+.fc-row-dark {
+  background-color: #e0e0e0; /* Color más oscuro para filas pares */
+}
+
+.fc-row-light {
+  background-color: #f0f0f0; /* Color más claro para filas impares */
+}
+
 .confirmation-modal {
   position: fixed;
   z-index: 1000;
