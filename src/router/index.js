@@ -14,11 +14,11 @@ import RestauranteBar from "@/views/RestauranteBar.vue";
 import DashboardView from "@/views/DashboardView.vue";
 
 const routes = [
-  {
-    path: "/",
-    name: "home",
-    component: HomeView,
-  },
+  //{
+    //path: "/",
+    //name: "home",
+    //component: HomeView,
+  //},
   {
     path: "/",
     name: "login",
