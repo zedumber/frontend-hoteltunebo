@@ -25,16 +25,30 @@
       <!-- <h4>Desglose por Tipo de Pago:</h4> -->
       <ul class="detail-row">
         <li>
-          <strong>Efectivo:</strong> ${{
-            (balanceDetalles.efectivo || 0).toFixed(2)
+          <strong>Efectivo:</strong>
+          {{
+            (balanceDetalles.efectivo || 0).toLocaleString("es-CO", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })
           }}
-          <strong>Tarjeta:</strong> ${{
-            (balanceDetalles.tarjeta || 0).toFixed(2)
-          }}<strong> Transferencia:</strong> ${{
-            (balanceDetalles.transferencia || 0).toFixed(2)
+          <strong>Tarjeta:</strong>
+          {{
+            (balanceDetalles.tarjeta || 0).toLocaleString("es-CO", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })
+          }}
+          <strong>Transferencia:</strong>
+          {{
+            (balanceDetalles.transferencia || 0).toLocaleString("es-CO", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })
           }}
         </li>
       </ul>
+
       <!-- </div> -->
 
       <!-- boton para arqueo de caja -->

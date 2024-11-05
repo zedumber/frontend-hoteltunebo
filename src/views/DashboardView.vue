@@ -20,6 +20,7 @@
           <th>Check-In</th>
           <th>Check-Out</th>
           <th>Total Pago</th>
+          <th>Pagado Realizado</th>
         </tr>
       </thead>
       <tbody>
@@ -31,6 +32,7 @@
           <td>{{ reserva.fecha_check_in }}</td>
           <td>{{ reserva.fecha_check_out }}</td>
           <td>{{ formatCurrency(reserva.total_pago) }}</td>
+          <td>{{ reserva.pago_realizado ? "Pagado" : "No pagado" }}</td>
         </tr>
       </tbody>
       <tfoot>
