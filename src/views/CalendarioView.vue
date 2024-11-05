@@ -278,12 +278,11 @@
           </tr>
         </tbody>
       </table>
-      <div class="modal-footer">
-        <button @click="mostrarModalClientes = false" class="btn btn-secondary">
-          Cerrar
-        </button>
-      </div>
+      <div class="modal-footer"></div>
     </div>
+    <button @click="mostrarModalClientes = false" class="btn btn-secondary">
+      Cerrar
+    </button>
   </div>
 
   <!-- Modal para Mostrar Resultados del Arqueo -->
@@ -945,9 +944,19 @@
       <form @submit.prevent="realizarReserva">
         <div class="form-group">
           <label for="cliente">Cliente:</label>
-          <select class="form-group" v-model="crearreserva.cliente_id" required>
+          <input
+            type="text"
+            v-model="searchTerm"
+            placeholder="Buscar cliente..."
+            class="form-control"
+          />
+          <select
+            class="form-control"
+            v-model="crearreserva.cliente_id"
+            required
+          >
             <option
-              v-for="cliente in clientes"
+              v-for="cliente in filteredClientes"
               :value="cliente.id"
               :key="cliente.id"
             >
@@ -956,7 +965,7 @@
           </select>
         </div>
 
-        <div class="form-groupt">
+        <div class="form-group">
           <label for="numeroPersonas">Número de Personas:</label>
           <input
             type="number"
@@ -991,11 +1000,8 @@
           <select v-model="crearreserva.estado" required>
             <option value="Pendiente">Pendiente</option>
             <option value="Confirmada">Confirmada</option>
-            <!-- <option value="Cancelada">Cancelada</option> -->
-            <!-- <option value="Disponible">Disponible</option> -->
             <option value="Reservada">Reservada</option>
             <option value="En Curso">Ocupada</option>
-            <!-- <option value="Completada">Completada</option> -->
           </select>
         </div>
 
@@ -1147,6 +1153,7 @@ export default {
   components: { FullCalendar },
   data() {
     return {
+      searchTerm: "", // Para almacenar el término de búsqueda
       mostrarModalClientes: false,
       // clientes: [], // Aquí se almacenarán los clientes
       mostrarModalCliente: false,
@@ -1386,6 +1393,11 @@ export default {
   },
 
   computed: {
+    filteredClientes() {
+      return this.clientes.filter((cliente) =>
+        cliente.nombre.toLowerCase().includes(this.searchTerm.toLowerCase())
+      );
+    },
     // Método para obtener el total de egresos de una categoría y tipo de pago específico
     totalEgresos() {
       // Suma el valor de 'cantidad' de cada egreso
@@ -2400,6 +2412,14 @@ export default {
 };
 </script>
 <style>
+input[type="text"],
+input[type="number"],
+input[type="date"],
+select {
+  width: 100%; /* Asegúrate de que los elementos ocupen todo el ancho disponible */
+  padding: 5px; /* Menor espaciado interno para que ocupen menos espacio */
+  font-size: 14px; /* Ajusta el tamaño de la fuente */
+}
 .fc-event:hover {
   background-color: #d3d3d3 !important; /* Asegúrate de usar !important si es necesario */
   transition: background-color 0.3s ease; /* Para la transición */
@@ -2525,10 +2545,10 @@ h3 {
   /* gap: 1.5rem; */
 }
 
-.form-group {
+/* .form-group {
   display: flex;
   flex-direction: row;
-}
+} */
 
 .form-label {
   font-size: 1rem;
