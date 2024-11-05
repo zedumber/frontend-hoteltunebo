@@ -1098,8 +1098,8 @@
         </div>
 
         <!-- Botones de acciones -->
-        <button type="submit" class="btn-confirmar">Guardar</button>
-        <button type="button" class="btn-cancelar" @click="cerrarModal">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <button type="button" class="btn btn-secundario" @click="cerrarModal">
           Cancelar
         </button>
       </form>
@@ -1328,24 +1328,48 @@ export default {
 
         // Efecto hover para eventos
         eventDidMount: (info) => {
-          // Agrega la transición
-          info.el.style.transition = "background-color 0.3s ease"; // Suaviza la transición
+          // Estilo de hover
+          const hoverColor = "#d3d3d3";
+          info.el.style.transition = "background-color 0.3s ease";
 
-          // Agrega el efecto hover
-          const originalColor = ""; // Color original o el que tengas configurado
-          const hoverColor = "#d3d3d3"; // Color al hacer hover en el evento
+          // Almacena el contenido del tooltip
+          const tooltipText = info.event.extendedProps.creadoPor || "";
 
+          // Crea el tooltip al pasar el mouse
           info.el.addEventListener("mouseenter", () => {
-            info.el.style.backgroundColor = hoverColor; // Cambia el color al hacer hover
+            info.el.style.backgroundColor = hoverColor;
+
+            // Crea el elemento del tooltip
+            const tooltip = document.createElement("div");
+            tooltip.className = "tooltip";
+            tooltip.style.position = "absolute";
+            tooltip.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+            tooltip.style.color = "white";
+            tooltip.style.padding = "5px";
+            tooltip.style.borderRadius = "4px";
+            tooltip.style.fontSize = "12px";
+            tooltip.style.zIndex = "1000";
+            tooltip.textContent = tooltipText;
+
+            // Agrega el tooltip al DOM
+            document.body.appendChild(tooltip);
+
+            // Posiciona el tooltip
+            info.el.addEventListener("mousemove", (e) => {
+              tooltip.style.left = `${e.pageX + 10}px`;
+              tooltip.style.top = `${e.pageY + 10}px`;
+            });
+
+            // Elimina el tooltip al salir del mouse
+            info.el.addEventListener("mouseleave", () => {
+              tooltip.remove();
+              info.el.style.backgroundColor = "";
+            });
           });
 
-          info.el.addEventListener("mouseleave", () => {
-            info.el.style.backgroundColor = originalColor; // Vuelve al color original
-          });
-
-          // Manejador de clic
+          // Manejador de clic para el evento
           info.el.addEventListener("click", () => {
-            this.handleEventClick(info); // Llama a la función de clic
+            this.handleEventClick(info);
           });
         },
 
@@ -2291,21 +2315,29 @@ export default {
           let fechaCheckOut = new Date(reserva.fecha_check_out);
           fechaCheckOut.setDate(fechaCheckOut.getDate() + 1);
 
+          // Verificar valores
+          const clienteNombre = reserva.cliente_nombre || "Sin nombre";
+          const numeroPersonas =
+            reserva.numero_personas > 0
+              ? `${reserva.numero_personas} personas`
+              : "Cantidad no especificada";
+          const creadoPor = reserva.name || "No especificado";
+
           return {
             id: reserva.id,
-            title: `${reserva.cliente_nombre} - ${reserva.numero_personas} personas - ${reserva.id}`,
+            title: `${clienteNombre} - ${numeroPersonas}`, // Solo muestra el cliente y la cantidad de personas
             start: reserva.fecha_check_in,
             end: fechaCheckOut,
             resourceId: reserva.habitacion_id,
-            classNames: [`event-${reserva.estado.toLowerCase()}`], // Asignar la clase correspondiente
+            classNames: [`event-${reserva.estado.toLowerCase()}`],
             extendedProps: {
               estado: reserva.estado,
-              // color: color,
+              creadoPor: `Creado por: ${creadoPor}`, // Almacena el nombre para el tooltip
             },
           };
         });
 
-        this.calendarOptions.events = reservas; // Asigna las reservas a los eventos del calendario
+        this.calendarOptions.events = reservas;
       } catch (error) {
         console.error("Error al obtener reservas:", error);
       }
@@ -2426,6 +2458,11 @@ export default {
 };
 </script>
 <style>
+.tooltip {
+  transition: opacity 0.3s;
+  pointer-events: none; /* Evita que interfiera con el mouse */
+}
+
 input[type="text"],
 input[type="number"],
 input[type="date"],
