@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
-import HomeView from "../views/HomeView.vue";
+//import HomeView from "../views/HomeView.vue";
 import RegisterCompo from "@/components/RegisterCompo.vue";
 import ResgitrarHuespe from "@/components/ResgitrarHuespe.vue";
 import LoginView from "@/views/LoginView.vue";
@@ -14,11 +14,11 @@ import RestauranteBar from "@/views/RestauranteBar.vue";
 import DashboardView from "@/views/DashboardView.vue";
 
 const routes = [
-  //{
-    //path: "/",
-    //name: "home",
-    //component: HomeView,
-  //},
+  // {
+  //   path: "/",
+  //   name: "home",
+  //   component: HomeView,
+  // },
   {
     path: "/",
     name: "login",
