@@ -12,6 +12,8 @@ import InventarioNevera from "@/views/InventarioNevera.vue";
 import InventarioBar from "@/views/InventarioBar.vue";
 import RestauranteBar from "@/views/RestauranteBar.vue";
 import DashboardView from "@/views/DashboardView.vue";
+import GastosView from "@/views/GastosView.vue";
+import EventosView from "@/views/EventosView.vue";
 
 const routes = [
   // {
@@ -21,8 +23,8 @@ const routes = [
   // },
   {
     path: "/",
-    name: "login",
-    component: LoginView,
+
+    redirect: "/login",
   },
   {
     path: "/about",
@@ -93,6 +95,16 @@ const routes = [
     path: "/dashboard",
     name: "Dashboard",
     component: DashboardView,
+  },
+  {
+    path: "/gastos",
+    name: "Gastos",
+    component: GastosView,
+  },
+  {
+    path: "/eventos",
+    name: "Eventos",
+    component: EventosView,
   },
 ];
 

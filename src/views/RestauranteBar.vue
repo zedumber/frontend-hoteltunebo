@@ -332,7 +332,15 @@
                 :key="item.producto.id"
                 class="carrito-item"
               >
-                <p>{{ item.producto.nombre }} ({{ item.cantidad }})</p>
+                <p>
+                  {{ item.producto.nombre }} ({{ item.cantidad }})
+                  <button
+                    @click="eliminarDelCarrito(index)"
+                    class="delete-button"
+                  >
+                    Eliminar
+                  </button>
+                </p>
                 <p>
                   SubTotal:
                   {{ item.producto.precio * item.cantidad }} $
@@ -539,6 +547,9 @@ export default {
     this.obtenerPedidosPendientes(); // Llama a la función para obtener pedidos pendientes
   },
   methods: {
+    eliminarDelCarrito(index) {
+      this.carrito.splice(index, 1);
+    },
     abrirModalConfirmacion() {
       this.showConfirmationModal = true; // Muestra el modal de confirmación
     },
