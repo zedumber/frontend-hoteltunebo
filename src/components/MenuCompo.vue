@@ -1,8 +1,8 @@
 <template>
   <div :class="['sidebar', { active: isActive }]">
     <ul>
-      <li><router-link to="/">Inicio</router-link></li>
-      <li><router-link to="/reservas">Reservas</router-link></li>
+      <!-- <li><router-link to="/">Inicio</router-link></li> -->
+      <!-- <li><router-link to="/reservas">Reservas</router-link></li> -->
       <li><router-link to="/habitaciones">Habitaciones</router-link></li>
       <li>
         <router-link to="/inventario-nevera">Inventario Nevera</router-link>
@@ -13,9 +13,10 @@
         >
       </li>
       <li><router-link to="/restaurante-bar">Restaurante</router-link></li>
-      <li><router-link to="/dashboard">Dashboar</router-link></li>
+      <li><router-link to="/dashboard">Dashboard</router-link></li>
       <li><router-link to="/gastos">Gastos</router-link></li>
-      <li><router-link to="/registrarClientes">Clientes</router-link></li>
+      <li><router-link to="/eventos">Control de Eventos</router-link></li>
+      <!-- <li><router-link to="/registrarClientes">Clientes</router-link></li> -->
       <li>
         <router-link to="/calendario">calendario</router-link>
       </li>
