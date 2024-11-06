@@ -22,40 +22,54 @@
         </header>
         <h1>Venta de Productos</h1>
 
-        <!-- Lista de productos en tarjetas -->
-        <div class="productos-grid">
-          <div
-            v-for="producto in productos"
-            :key="producto.id"
-            class="producto-card"
-          >
-            <img
-              :src="producto.imagen || 'https://via.placeholder.com/150'"
-              alt="Imagen del Producto"
-              class="producto-imagen"
-            />
-            <div class="producto-info">
-              <h3>{{ producto.nombre }}</h3>
-              <p>Disponible: {{ producto.stock }}</p>
-              <p>Precio: {{ producto.precio }} $</p>
-            </div>
+        <!-- Campo de entrada para filtrar productos por nombre -->
+        <input
+          type="text"
+          v-model="filtroNombre"
+          placeholder="Buscar producto por nombre"
+          class="filtro-nombre"
+        />
 
-            <!-- Ajuste de cantidad a vender -->
-            <div class="producto-cantidad">
-              <button @click="disminuirCantidad(producto.id)">-</button>
-              <span>{{ venta.cantidad[producto.id] || 0 }}</span>
-              <button @click="aumentarCantidad(producto.id, producto.stock)">
-                +
+        <!-- Lista de productos agrupados por categoría -->
+        <div
+          v-for="(productos, categoria) in productosFiltradosPorCategoria"
+          :key="categoria"
+        >
+          <h2>{{ categoria }}</h2>
+          <div class="productos-grid">
+            <div
+              v-for="producto in productos"
+              :key="producto.id"
+              class="producto-card"
+            >
+              <img
+                :src="producto.imagen || 'https://via.placeholder.com/150'"
+                alt="Imagen del Producto"
+                class="producto-imagen"
+              />
+              <div class="producto-info">
+                <h3>{{ producto.nombre }}</h3>
+                <p>Disponible: {{ producto.stock }}</p>
+                <p>Precio: {{ producto.precio }} $</p>
+              </div>
+
+              <!-- Ajuste de cantidad a vender -->
+              <div class="producto-cantidad">
+                <button @click="disminuirCantidad(producto.id)">-</button>
+                <span>{{ venta.cantidad[producto.id] || 0 }}</span>
+                <button @click="aumentarCantidad(producto.id, producto.stock)">
+                  +
+                </button>
+              </div>
+
+              <!-- Botón para agregar al carrito -->
+              <button
+                :disabled="venta.cantidad[producto.id] <= 0"
+                @click="agregarAlCarrito(producto)"
+              >
+                Agregar al carrito
               </button>
             </div>
-
-            <!-- Botón para agregar al carrito -->
-            <button
-              :disabled="venta.cantidad[producto.id] <= 0"
-              @click="agregarAlCarrito(producto)"
-            >
-              Agregar al carrito
-            </button>
           </div>
         </div>
 
@@ -488,13 +502,14 @@ export default {
   },
   data() {
     return {
+      filtroNombre: "",
       showConfirmationModal: false,
       mostrarModalArqueo: false, // Variable para mostrar el modal de arqueo de caja
       pedidos: [], // Variable para almacenar los pedidos
       propina: 0,
       habitaciones: [],
       // productos: [],
-      productos: {}, // Para mapear producto_id a nombre
+      productos: [], // Para mapear producto_id a nombre
       venta: {
         cantidad: {},
         metodo_pago: "no_pagado",
@@ -524,6 +539,22 @@ export default {
     };
   },
   computed: {
+    productosFiltradosPorCategoria() {
+      // Filtrar productos por nombre y agruparlos por categoría
+      return this.productos
+        .filter((producto) =>
+          producto.nombre
+            .toLowerCase()
+            .includes(this.filtroNombre.toLowerCase())
+        )
+        .reduce((categorias, producto) => {
+          if (!categorias[producto.categoria]) {
+            categorias[producto.categoria] = [];
+          }
+          categorias[producto.categoria].push(producto);
+          return categorias;
+        }, {});
+    },
     totalPedido() {
       let total = this.nuevosDetalles.reduce((sum, detalle) => {
         return sum + detalle.cantidad * detalle.precio_unitario;
@@ -981,7 +1012,7 @@ input[type="number"] {
 .productos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
+  gap: 10px;
 }
 
 .producto-card {
