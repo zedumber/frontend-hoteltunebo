@@ -1333,7 +1333,12 @@ export default {
           info.el.style.transition = "background-color 0.3s ease";
 
           // Almacena el contenido del tooltip
+          // const tooltipText = info.event.extendedProps.creadoPor || "";
+          // const tooltipText2 = info.event.extendedProps.pagoRealizado || "";
+
+          // Almacena el contenido del tooltip
           const tooltipText = info.event.extendedProps.creadoPor || "";
+          const tooltipPago = info.event.extendedProps.pagoRealizado || "";
 
           // Crea el tooltip al pasar el mouse
           info.el.addEventListener("mouseenter", () => {
@@ -1349,7 +1354,8 @@ export default {
             tooltip.style.borderRadius = "4px";
             tooltip.style.fontSize = "12px";
             tooltip.style.zIndex = "1000";
-            tooltip.textContent = tooltipText;
+            //tooltip.textContent = tooltipText;
+            tooltip.innerHTML = `<strong>${tooltipText}</strong><br>${tooltipPago}`; // Muestra ambas informaciones
 
             // Agrega el tooltip al DOM
             document.body.appendChild(tooltip);
@@ -2322,6 +2328,8 @@ export default {
               ? `${reserva.numero_personas} personas`
               : "Cantidad no especificada";
           const creadoPor = reserva.name || "No especificado";
+          const pagoRealizado =
+            reserva.pago_realizado === 1 ? "Pago realizado" : "Pago pendiente";
 
           return {
             id: reserva.id,
@@ -2333,6 +2341,7 @@ export default {
             extendedProps: {
               estado: reserva.estado,
               creadoPor: `Creado por: ${creadoPor}`, // Almacena el nombre para el tooltip
+              pagoRealizado: pagoRealizado, // Almacena el pago realizado para el tooltip
             },
           };
         });

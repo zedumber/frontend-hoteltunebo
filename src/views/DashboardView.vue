@@ -21,6 +21,7 @@
           <th>Check-Out</th>
           <th>Total Pago</th>
           <th>Pagado Realizado</th>
+          <th>Tipo de pago</th>
         </tr>
       </thead>
       <tbody>
@@ -33,6 +34,14 @@
           <td>{{ reserva.fecha_check_out }}</td>
           <td>{{ formatCurrency(reserva.total_pago) }}</td>
           <td>{{ reserva.pago_realizado ? "Pagado" : "No pagado" }}</td>
+          <td>
+            {{
+              reserva.cobros_huesped && reserva.cobros_huesped.length > 0
+                ? reserva.cobros_huesped[reserva.cobros_huesped.length - 1]
+                    .tipo_pago
+                : "N/A"
+            }}
+          </td>
         </tr>
       </tbody>
       <tfoot>
@@ -84,7 +93,7 @@
       <tbody>
         <tr v-for="nevera in neverasFiltradas" :key="nevera.id">
           <td>{{ getUserName(nevera.user_id) }}</td>
-          <td>{{ nevera.pagado }}</td>
+          <td>{{ nevera.pagado ? "Pagado" : "No pagado" }}</td>
           <td>{{ nevera.metodo_pago }}</td>
           <td>{{ formatCurrency(nevera.total_original) }}</td>
         </tr>
@@ -201,11 +210,15 @@ export default {
       if (!Array.isArray(datos)) return [];
       const fechaInicio = new Date(this.fechaInicio);
       const fechaFin = new Date(this.fechaFin);
+      // Aumenta un día a la fecha de fin para incluir todo el día seleccionado
+      if (this.fechaFin) {
+        fechaFin.setDate(fechaFin.getDate() + 1);
+      }
       return datos.filter((item) => {
         const fechaCreacion = new Date(item.created_at);
         return (
-          (!this.fechaInicio || fechaCreacion >= fechaInicio) &&
-          (!this.fechaFin || fechaCreacion <= fechaFin)
+          (!this.fechaInicio || fechaCreacion > fechaInicio) &&
+          (!this.fechaFin || fechaCreacion < fechaFin)
         );
       });
     },
