@@ -4,6 +4,13 @@
       <label>Filtrar por Fecha de Creación:</label>
       <input type="date" v-model="fechaInicio" @change="filtrarPorFecha" />
       <input type="date" v-model="fechaFin" @change="filtrarPorFecha" />
+      <label>Filtrar por Fecha de Entrada:</label>
+      <input
+        type="date"
+        v-model="fechaEntradaInicio"
+        @change="filtrarPorFecha"
+      />
+      <input type="date" v-model="fechaEntradaFin" @change="filtrarPorFecha" />
     </div>
     <div class="general-total">
       <h3>Total General: {{ formatCurrency(totalGeneral) }}</h3>
@@ -105,6 +112,42 @@
         </tr>
       </tfoot>
     </table>
+
+    <h2>Detalles de Egresos Generales</h2>
+    <table class="reservations-table">
+      <thead>
+        <tr>
+          <th>Usuario</th>
+          <th>Turno</th>
+          <th>Área</th>
+          <th>Cantidad</th>
+          <th>Tipo de Egreso</th>
+
+          <th>Método de Pago</th>
+          <th>Observación</th>
+          <th>Fecha</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="egreso in egresos" :key="egreso.id">
+          <td>{{ getUserName(egreso.user_id) }}</td>
+          <td>{{ egreso.turno_id }}</td>
+          <td>{{ egreso.area }}</td>
+          <td>{{ formatCurrency(egreso.cantidad) }}</td>
+          <td>{{ egreso.tipo_egreso }}</td>
+
+          <td>{{ egreso.metodo_pago || "N/A" }}</td>
+          <td>{{ egreso.observacion || "Sin observaciones" }}</td>
+          <td>{{ egreso.fecha }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3">Total Egreso</td>
+          <td>{{ formatCurrency(totalEgresos) }}</td>
+        </tr>
+      </tfoot>
+    </table>
   </div>
 </template>
 
@@ -114,12 +157,15 @@ import axios from "../plugins/axios";
 export default {
   data() {
     return {
+      egresos: [],
       reservas: [],
       pedidos: [],
       neveras: [],
       usuarios: [],
       fechaInicio: "",
       fechaFin: "",
+      fechaEntradaInicio: "",
+      fechaEntradaFin: "",
     };
   },
   computed: {
@@ -150,6 +196,12 @@ export default {
         0
       );
     },
+    totalEgresos() {
+      return this.egresos.reduce(
+        (total, egreso) => total + parseFloat(egreso.cantidad || 0),
+        0
+      );
+    },
     totalGeneral() {
       return this.totalReservas + this.totalPedidos + this.totalNeveras;
     },
@@ -159,8 +211,18 @@ export default {
     this.fetchPedidos();
     this.fetchUsuarios();
     this.fetchNevera();
+    this.fetchEgresos();
+    this.fetchUsuarios();
   },
   methods: {
+    async fetchEgresos() {
+      try {
+        const response = await axios.get("/auth/egresosgenerales");
+        this.egresos = response.data;
+      } catch (error) {
+        console.error("Error al obtener los egresos generales:", error);
+      }
+    },
     async fetchNevera() {
       try {
         const response = await axios.get("/auth/historial-inventarios");
@@ -210,15 +272,22 @@ export default {
       if (!Array.isArray(datos)) return [];
       const fechaInicio = new Date(this.fechaInicio);
       const fechaFin = new Date(this.fechaFin);
-      // Aumenta un día a la fecha de fin para incluir todo el día seleccionado
-      if (this.fechaFin) {
-        fechaFin.setDate(fechaFin.getDate() + 1);
-      }
+      const fechaEntradaInicio = new Date(this.fechaEntradaInicio);
+      const fechaEntradaFin = new Date(this.fechaEntradaFin);
+
+      if (this.fechaFin) fechaFin.setDate(fechaFin.getDate() + 1);
+      if (this.fechaEntradaFin)
+        fechaEntradaFin.setDate(fechaEntradaFin.getDate() + 1);
+
       return datos.filter((item) => {
         const fechaCreacion = new Date(item.created_at);
+        const fechaEntrada = new Date(item.fecha_check_in);
+
         return (
-          (!this.fechaInicio || fechaCreacion > fechaInicio) &&
-          (!this.fechaFin || fechaCreacion < fechaFin)
+          (!this.fechaInicio || fechaCreacion >= fechaInicio) &&
+          (!this.fechaFin || fechaCreacion < fechaFin) &&
+          (!this.fechaEntradaInicio || fechaEntrada >= fechaEntradaInicio) &&
+          (!this.fechaEntradaFin || fechaEntrada < fechaEntradaFin)
         );
       });
     },
@@ -267,7 +336,7 @@ export default {
 
 .filter {
   display: flex;
-  flex-wrap: wrap;
+  /* flex-wrap: wrap; */
   gap: 1rem;
   align-items: center;
 }

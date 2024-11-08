@@ -46,11 +46,9 @@
               maximumFractionDigits: 2,
             })
           }}
+          <strong>Huespedes:</strong> {{ totalPersonas }}
         </li>
       </ul>
-      <!-- <div>
-        <h3>Total de Huespedes en el Hotel: {{ totalPersonas }}</h3>
-      </div> -->
 
       <!-- </div> -->
 
@@ -75,7 +73,7 @@
 
       <!-- boton para abrir el modal de cambiar estado de servicio de la habitacion -->
       <button class="btn btn-primary" @click="showEstadoModal = true">
-        <i class="fas fa-bed"></i> Cambiar Estado de Servicio
+        <i class="fas fa-bed"></i>Servicio de Habitacion
       </button>
     </div>
   </div>
@@ -1568,7 +1566,7 @@ export default {
     async obtenerHuespedesEnCurso() {
       try {
         // Realizamos una petición al backend para obtener el total de personas en reservas "En Curso"
-        const response = await axios.get("/auth/reservas/huespedes-en-curso");
+        const response = await axios.get("/auth/reservas/huespedess");
         this.totalPersonas = response.data.total_personas; // Asignamos el total al data
       } catch (error) {
         console.error(
