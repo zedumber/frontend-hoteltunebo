@@ -978,7 +978,7 @@
               :key="habitacion.id"
               :value="habitacion.id"
             >
-              {{ habitacion.nombre }}
+              {{ habitacion.numero }}
               <!-- Muestra el nombre de la habitación -->
             </option>
           </select>
@@ -1492,10 +1492,13 @@ export default {
 
   computed: {
     filteredClientes() {
-      return this.clientes.filter((cliente) =>
-        cliente.nombre.toLowerCase().includes(this.searchTerm.toLowerCase())
-      );
+      return this.clientes
+        .filter((cliente) => cliente && cliente.nombre) // Filtra clientes que no sean undefined y tengan nombre
+        .filter((cliente) =>
+          cliente.nombre.toLowerCase().includes(this.searchTerm.toLowerCase())
+        );
     },
+
     // Método para obtener el total de egresos de una categoría y tipo de pago específico
     totalEgresos() {
       // Suma el valor de 'cantidad' de cada egreso
@@ -1645,6 +1648,7 @@ export default {
     },
     async agregarCliente() {
       try {
+        // Guarda el cliente creado o actualizado en la variable `response`
         const response = this.nuevoCliente.id
           ? await axios.put(
               `/auth/clientes/${this.nuevoCliente.id}`,
@@ -1657,11 +1661,16 @@ export default {
           response.data.message || "Cliente agregado exitosamente.";
         this.showNotificationModal = true;
         this.mostrarModalCliente = false; // Cierra el modal
-        this.nuevoCliente = {}; // Limpia el formulario después de guardar
+
+        // Guarda el cliente antes de limpiar `nuevoCliente`
+        const clienteGuardado = response.data.cliente;
+
+        // Limpia el formulario después de guardar
+        this.nuevoCliente = {};
 
         // Si agregamos un nuevo cliente, lo podemos agregar a la lista de clientes
         if (!this.nuevoCliente.id) {
-          this.clientes.push(response.data.cliente); // Asegúrate de que el servidor devuelva el cliente creado
+          this.clientes.push(clienteGuardado); // Agrega el cliente guardado a la lista de clientes
         }
       } catch (error) {
         this.messageType = "error";
@@ -2264,17 +2273,6 @@ export default {
           this.showNotification("Error al cargar los clientes.", "error");
         });
     },
-    // async obtenerClientes() {
-    //   try {
-    //     const response = await axios.get("/auth/clientes");
-    //     this.clientes = response.data; // Asigna los clientes obtenidos
-    //   } catch (error) {
-    //     console.error("Error al obtener los clientes:", error);
-    //     this.messageType = "error";
-    //     this.message = "Hubo un problema al cargar la lista de clientes.";
-    //     this.showNotificationModal = true;
-    //   }
-    // },
 
     // Función para manejar el clic en una habitación
     handleResourceClick(info) {
