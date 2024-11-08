@@ -1566,7 +1566,7 @@ export default {
     async obtenerHuespedesEnCurso() {
       try {
         // Realizamos una petición al backend para obtener el total de personas en reservas "En Curso"
-        const response = await axios.get("/auth/reservas/huespedess");
+        const response = await axios.get("/auth/res/huespedess");
         this.totalPersonas = response.data.total_personas; // Asignamos el total al data
       } catch (error) {
         console.error(
