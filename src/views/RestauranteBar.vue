@@ -924,6 +924,8 @@ export default {
           this.showNotification("Venta realizada exitosamente.", "success");
           this.carrito = []; // Vaciar el carrito
           this.fetchProductos(); // Actualiza el stock después de la venta
+          this.obtenerPedidosPendientes(); // Actualiza los pedidos pendientes
+
           this.showCarritoModal = false; // Cerrar el modal del
           // Opcional: resetear el objeto venta
           this.venta = {

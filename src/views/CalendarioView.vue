@@ -48,6 +48,9 @@
           }}
         </li>
       </ul>
+      <!-- <div>
+        <h3>Total de Huespedes en el Hotel: {{ totalPersonas }}</h3>
+      </div> -->
 
       <!-- </div> -->
 
@@ -69,6 +72,11 @@
       <button @click="abrirModalConfirmacion" class="btn btn-danger">
         Cerrar Turno
       </button>
+
+      <!-- boton para abrir el modal de cambiar estado de servicio de la habitacion -->
+      <button class="btn btn-primary" @click="showEstadoModal = true">
+        <i class="fas fa-bed"></i> Cambiar Estado de Servicio
+      </button>
     </div>
   </div>
   <div style="display: flex">
@@ -81,6 +89,50 @@
         @eventClick="handleEventClick"
         @resourceLabelDidMount="handleResourceClick"
       />
+    </div>
+    <!-- Modal para cambiar el estado de servicio de la habitación -->
+    <div v-if="showEstadoModal" class="dialog">
+      <div class="modal-content">
+        <span class="close-modal" @click="showEstadoModal = false"
+          >&times;</span
+        >
+        <h3>
+          Cambiar Estado de Servicio para Habitación
+          {{ habitacionSeleccionada.numero }}
+        </h3>
+        <div class="form-group">
+          <!-- Selección de habitación -->
+          <div class="form-group">
+            <label for="habitacionSeleccionada">Seleccionar Habitación:</label>
+            <select
+              v-model="habitacionSeleccionada.id"
+              @change="obtenerDetallesHabitacion"
+            >
+              <option
+                v-for="habitacion in habitaciones"
+                :key="habitacion.id"
+                :value="habitacion.id"
+              >
+                {{ `Hab. ${habitacion.numero}` }}
+                <!-- Mostrar número de la habitación -->
+              </option>
+            </select>
+          </div>
+
+          <label for="estadoServicio">Estado de Servicio:</label>
+          <select
+            v-model="habitacionSeleccionada.estado_servicio"
+            @change="cambiarEstadoServicio(habitacionSeleccionada.id)"
+          >
+            <option value="Disponible">Disponible</option>
+            <option value="Mantenimiento">Mantenimiento</option>
+            <option value="Limpieza">Limpieza</option>
+          </select>
+        </div>
+        <button @click="actualizarEstadoServicio" class="btn btn-primary">
+          Actualizar Estado
+        </button>
+      </div>
     </div>
   </div>
 
@@ -956,6 +1008,7 @@
 
       <!-- Formulario de Reserva -->
       <form @submit.prevent="realizarReserva">
+        <!-- Resto del formulario de reserva -->
         <div class="form-group">
           <label for="cliente">Cliente:</label>
           <input
@@ -1167,6 +1220,7 @@ export default {
   components: { FullCalendar },
   data() {
     return {
+      totalPersonas: 0, // Variable para almacenar el total de personas
       searchTerm: "", // Para almacenar el término de búsqueda
       mostrarModalClientes: false,
       // clientes: [], // Aquí se almacenarán los clientes
@@ -1178,6 +1232,7 @@ export default {
         documento_identidad: "",
       },
       showConfirmationModal: false,
+      showEstadoModal: false,
       balanceTotal: 0, // Variable para almacenar el balance total
       balanceDetalles: [],
       mostrarModalEgresos: false,
@@ -1434,6 +1489,7 @@ export default {
     this.obtenerPedidosPendientes(); // Llama a la función para obtener pedidos pendientes
     this.fetchEgresos();
     this.obtenerBalanceTotal();
+    this.obtenerHuespedesEnCurso();
   },
 
   computed: {
@@ -1509,6 +1565,50 @@ export default {
     },
   },
   methods: {
+    async obtenerHuespedesEnCurso() {
+      try {
+        // Realizamos una petición al backend para obtener el total de personas en reservas "En Curso"
+        const response = await axios.get("/auth/reservas/huespedes-en-curso");
+        this.totalPersonas = response.data.total_personas; // Asignamos el total al data
+      } catch (error) {
+        console.error(
+          "Error al obtener el número de huéspedes en curso:",
+          error
+        );
+      }
+    },
+    async obtenerDetallesHabitacion() {
+      const seleccionada = this.habitaciones.find(
+        (habitacion) => habitacion.id === this.habitacionSeleccionada.id
+      );
+
+      if (seleccionada) {
+        this.habitacionSeleccionada = { ...seleccionada };
+      }
+    },
+    async cambiarEstadoServicio() {
+      try {
+        // Enviar los datos al backend (API)
+        const response = await axios.put(
+          `/auth/habitaciones/${this.habitacionSeleccionada.id}`,
+          {
+            estado_servicio: this.habitacionSeleccionada.estado_servicio,
+          }
+        );
+
+        // Si la actualización es exitosa
+        console.log("Estado de servicio actualizado:", response.data);
+
+        // Cierra el modal después de la actualización
+        this.showEstadoModal = false;
+
+        // Si es necesario, puedes actualizar las habitaciones en el frontend
+        // para reflejar el nuevo estado
+        this.fetchHabitaciones(); // Recarga las habitaciones desde el backend
+      } catch (error) {
+        console.error("Error al actualizar el estado de servicio:", error);
+      }
+    },
     abrirModaldeClientes() {
       this.mostrarModalClientes = true; // Muestra el modal de clientes
       this.fetchClientes(); // Llama a la función para obtener clientes
@@ -1830,7 +1930,7 @@ export default {
         this.messageType = "success";
         this.message = "Pagos realizados exitosamente.";
         this.showNotificationModal = true;
-        this.mostrarEgresos(); // Actualizar los egresos
+        // this.mostrarEgresos(); // Actualizar los egresos
         this.obtenerBalanceTotal(); // Actualizar el balance total
 
         // Reiniciar el formulario
@@ -2050,7 +2150,8 @@ export default {
         this.message = "Consumo guardado correctamente.";
         this.messageType = "success"; // Establece el tipo de mensaje
         this.showNotificationModal = true; // Abre el modal de notificación
-        this.fetchReservas(); // Actualiza la lista de reservas
+        // this.fetchReservas(); // Actualiza la lista de reservas
+        this.obtenerBalanceTotal(); // Actualiza el balance total
 
         // Cerrar el modal
         this.modalConsumoVisible = false;
@@ -2288,21 +2389,41 @@ export default {
 
         // Imprime en consola para verificar el orden
         console.log("Habitaciones ordenadas:", habitacionesOrdenadas);
+        // Asignamos las habitaciones a 'this.habitaciones'
+        this.habitaciones = habitacionesOrdenadas;
 
-        // Asigna los datos ordenados a las opciones de recursos
+        // Asigna los datos ordenados a las opciones de recursos, aplicando íconos según el estado de servicio
         this.calendarOptions.resources = habitacionesOrdenadas.map(
-          (habitacion, index) => ({
-            id: habitacion.id,
-            title: `Hab. ${habitacion.numero}`,
-            _order: index, // Campo para forzar el orden
-          })
+          (habitacion, index) => {
+            let iconHtml;
+
+            // Define el ícono según el estado de servicio
+            switch (habitacion.estado_servicio) {
+              case "Mantenimiento":
+                iconHtml = "🛠️"; // Ícono de mantenimiento
+                break;
+              case "Limpieza":
+                iconHtml = "🧹"; // Ícono de limpieza
+                break;
+              case "Disponible":
+              default:
+                iconHtml = ""; // Ícono de disponible
+                break;
+            }
+
+            return {
+              id: habitacion.id,
+              title: `Hab. ${habitacion.numero} ${iconHtml}`, // Ícono junto al número de habitación
+              _order: index, // Campo para forzar el orden
+            };
+          }
         );
 
-        // También actualiza el array de habitaciones
-        this.habitaciones = habitacionesOrdenadas.map((habitacion) => ({
-          id: habitacion.id,
-          nombre: `Hab. ${habitacion.numero}`,
-        }));
+        // // También actualiza el array de habitaciones, mostrando el estado de servicio en el nombre
+        // this.habitaciones = habitacionesOrdenadas.map((habitacion) => ({
+        //   id: habitacion.id,
+        //   nombre: ` Hab. ${habitacion.numero}`,
+        // }));
 
         // Refresca manualmente los recursos de FullCalendar
         if (this.$refs.calendar) {
@@ -2355,6 +2476,7 @@ export default {
     handleEventClick(info) {
       console.log("Evento clickeado:", info.event); // Muestra el evento clickeado
       this.currentReservaId = info.event.id;
+      //this.showEstadoModal = true; // Mostrar el modal para cambiar el estado
 
       if (this.currentReservaId) {
         // Hacer una solicitud al backend para obtener los detalles de la reserva
@@ -2467,6 +2589,9 @@ export default {
 };
 </script>
 <style>
+.fc-resource-title span {
+  margin-right: 5px; /* Ajusta la distancia entre el ícono y el título */
+}
 .tooltip {
   transition: opacity 0.3s;
   pointer-events: none; /* Evita que interfiera con el mouse */
