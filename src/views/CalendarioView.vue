@@ -1843,6 +1843,7 @@ export default {
         this.showDetallesReservaModal = false;
         // actualizar los eventos
         this.fetchReservas();
+        this.obtenerHuespedesEnCurso();
 
         // Aquí puedes actualizar el estado local o redirigir a otra página
       } catch (error) {
@@ -2332,6 +2333,7 @@ export default {
         })
         .then(() => {
           this.showNotification("Reserva realizada exitosamente.", "success");
+          this.obtenerHuespedesEnCurso(); // Actualizar la lista de huéspedes
           this.showReservaModal = false;
           this.reserva = {
             fecha_check_in: "",
@@ -2568,6 +2570,7 @@ export default {
         this.selectedStatus = ""; // Resetea la selección
         // Muestra notificación de éxito
         this.showNotification("Reserva actualizada con éxito.", "success");
+        this.obtenerHuespedesEnCurso();
       } catch (error) {
         // Manejo de errores
         if (error.response) {
