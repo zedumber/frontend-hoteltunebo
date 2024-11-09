@@ -32,8 +32,8 @@
         @change="filtrarReservas"
       >
         <option value="">Todos</option>
-        <option value="No Pagado">Pendiente</option>
-        <option value="Pagado">Pagado</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="pagado">Pagado</option>
         <!-- Agrega más opciones de estado según tu lógica de negocio -->
       </select>
     </div>
@@ -359,7 +359,7 @@ export default {
             : "N/A";
 
         const estadoPago =
-          reserva.pago_realizado === 1 ? "Pagado" : "No Pagado";
+          reserva.pago_realizado === 1 ? "pagado" : "pendiente";
 
         // Filtro por tipo de pago y estado
         const coincideTipoPago =
@@ -373,16 +373,15 @@ export default {
     pedidosFiltrados() {
       // Filtrar primero por fecha
       return this.filtrarPorFecha(this.pedidos).filter((pedido) => {
-        // Obtener el tipo de pago directamente desde el campo 'metodo_pago'
         const metodoPago = pedido.metodo_pago || "N/A";
-        // Filtrar por el estado de pago
-        const estadoPago = pedido.pagado === 1 ? "Pagado" : "No Pagado";
+        const estadoPago = pedido.estado; // Usamos el estado directamente
 
         // Filtro por tipo de pago (metodo_pago) y estado
         const coincideTipoPago =
           this.filtroTipoPago === "" || metodoPago === this.filtroTipoPago;
         const coincideEstado =
-          this.filtroEstado === "" || estadoPago === this.filtroEstado;
+          this.filtroEstado === "" ||
+          estadoPago === this.filtroEstado.toLowerCase();
 
         return coincideTipoPago && coincideEstado;
       });
@@ -395,7 +394,7 @@ export default {
         const metodoPago = nevera.metodo_pago || "N/A";
 
         // Filtrar por el estado de pago
-        const estadoPago = nevera.pagado === 1 ? "Pagado" : "No Pagado";
+        const estadoPago = nevera.pagado === 1 ? "pagado" : "pendiente";
 
         // Filtro por tipo de pago (metodo_pago) y estado de pago (pagado)
         const coincideTipoPago =
