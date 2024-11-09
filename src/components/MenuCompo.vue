@@ -16,6 +16,7 @@
       <li><router-link to="/dashboard">Dashboard</router-link></li>
       <li><router-link to="/gastos">Gastos</router-link></li>
       <li><router-link to="/eventos">Control de Eventos</router-link></li>
+      <li><router-link to="/entregocuenta">Cuentas</router-link></li>
       <!-- <li><router-link to="/registrarClientes">Clientes</router-link></li> -->
       <li>
         <router-link to="/calendario">calendario</router-link>

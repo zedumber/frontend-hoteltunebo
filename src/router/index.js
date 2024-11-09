@@ -14,6 +14,7 @@ import RestauranteBar from "@/views/RestauranteBar.vue";
 import DashboardView from "@/views/DashboardView.vue";
 import GastosView from "@/views/GastosView.vue";
 import EventosView from "@/views/EventosView.vue";
+import EntregoCuenta from "@/views/EntregoCuenta.vue";
 
 const routes = [
   // {
@@ -105,6 +106,11 @@ const routes = [
     path: "/eventos",
     name: "Eventos",
     component: EventosView,
+  },
+  {
+    path: "/entregocuenta",
+    name: "EntregoCuenta",
+    component: EntregoCuenta,
   },
 ];
 
