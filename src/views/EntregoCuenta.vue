@@ -12,6 +12,7 @@
       />
       <input type="date" v-model="fechaEntradaFin" @change="filtrarPorFecha" />
     </div>
+
     <div class="filter">
       <label for="filtroTipoPago">Tipo de Pago:</label>
       <select
@@ -35,6 +36,18 @@
         <option value="pendiente">Pendiente</option>
         <option value="pagado">Pagado</option>
         <!-- Agrega más opciones de estado según tu lógica de negocio -->
+      </select>
+
+      <!-- filtro para saber si ya entrego la cuenta al admin -->
+      <label for="filtroEntregado">Entregado a Administración:</label>
+      <select
+        id="filtroEntregado"
+        v-model="filtroEntregado"
+        @change="filtrarReservas"
+      >
+        <option value="">Todos</option>
+        <option value="1">Sí</option>
+        <option value="0">No</option>
       </select>
     </div>
 
@@ -336,6 +349,7 @@ export default {
       filtroEstado: "", // Filtro para el estado
       selectedPedidos: [], // Nueva propiedad para almacenar los IDs seleccionados
       totalPedidosSeleccionados: 0, // Suma de los pedidos seleccionados
+      filtroEntregado: "", // Filtro para saber si ya se entregó al admin
     };
   },
   computed: {
@@ -346,6 +360,21 @@ export default {
     //       this.filtroTipoPago === "" ||
     //       reserva.tipo_pago === this.filtroTipoPago
     //     );
+    //   });
+    // },
+    // reservasAdminEntregadas() {
+    //   return this.reservas.filter((reserva) => {
+    //     return reserva.entregado_a_administracion === 1;
+    //   });
+    // },
+    // pedidosAdminEntregados() {
+    //   return this.pedidos.filter((pedido) => {
+    //     return pedido.entregado_a_administracion === 1;
+    //   });
+    // },
+    // neverasAdminEntregadas() {
+    //   return this.neveras.filter((nevera) => {
+    //     return nevera.entregado_a_administracion === 1;
     //   });
     // },
     reservasFiltradas() {
@@ -367,7 +396,14 @@ export default {
         const coincideEstado =
           this.filtroEstado === "" || estadoPago === this.filtroEstado;
 
-        return coincideTipoPago && coincideEstado;
+        // Filtro por entregado a administración
+        const coincideEntregado =
+          this.filtroEntregado === "" ||
+          reserva.entregado_a_administracion === Number(this.filtroEntregado);
+
+        return coincideTipoPago && coincideEstado && coincideEntregado;
+
+        //     return coincideTipoPago && coincideEstado;
       });
     },
     pedidosFiltrados() {
@@ -383,7 +419,14 @@ export default {
           this.filtroEstado === "" ||
           estadoPago === this.filtroEstado.toLowerCase();
 
-        return coincideTipoPago && coincideEstado;
+        // Filtro por entregado a administración
+        const coincideEntregado =
+          this.filtroEntregado === "" ||
+          pedido.entregado_a_administracion === Number(this.filtroEntregado);
+
+        return coincideTipoPago && coincideEstado && coincideEntregado;
+
+        //  return coincideTipoPago && coincideEstado;
       });
     },
 
@@ -402,7 +445,14 @@ export default {
         const coincideEstadoPago =
           this.filtroEstado === "" || estadoPago === this.filtroEstado;
 
-        return coincideTipoPago && coincideEstadoPago;
+        // Filtro por entregado a administración
+        const coincideEntregado =
+          this.filtroEntregado === "" ||
+          nevera.entregado_a_administracion === Number(this.filtroEntregado);
+
+        return coincideTipoPago && coincideEstadoPago && coincideEntregado;
+
+        //   return coincideTipoPago && coincideEstadoPago;
       });
     },
 
@@ -457,6 +507,14 @@ export default {
     },
   },
   methods: {
+    filtradoAdminEntregado() {
+      this.reservasFiltradas = this.reservas.filter((reserva) => {
+        return (
+          this.filtroEntregado === "" ||
+          reserva.entregado_a_administracion === Number(this.filtroEntregado)
+        );
+      });
+    },
     filtrarPorTipoPago() {
       // Método para ejecutar la lógica de filtro (puede usarse para acciones adicionales si es necesario)
       this.reservasFiltradas = this.filtrarPorFecha(
