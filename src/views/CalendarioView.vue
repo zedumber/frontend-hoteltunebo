@@ -25,14 +25,14 @@
       <!-- <h4>Desglose por Tipo de Pago:</h4> -->
       <ul class="detail-row">
         <li>
-          <strong>Efectivo:</strong>
+          <strong @click="abrirModalBalance">Efectivo:</strong>
           {{
             (balanceDetalles.efectivo || 0).toLocaleString("es-CO", {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })
           }}
-          <strong>Tarjeta:</strong>
+          <strong @click="abrirModalBalance">Tarjeta:</strong>
           {{
             (balanceDetalles.tarjeta || 0).toLocaleString("es-CO", {
               minimumFractionDigits: 2,
@@ -143,6 +143,38 @@
     />
   </div>
 
+  <!-- Modal para mostrar todos los balances por área -->
+  <div v-if="mostrarModalBalance" class="dialog">
+    <div class="modal-content">
+      <span @click="cerrarModalBalance" class="close">&times;</span>
+      <h3>Desglose Completo de Balances</h3>
+
+      <!-- Tabla para mostrar todos los detalles de balances_por_area -->
+      <table>
+        <thead>
+          <tr>
+            <th>Tipo de Pago</th>
+            <th>Área</th>
+            <th>Monto</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Iterar sobre cada tipo de pago (efectivo, tarjeta, transferencia) -->
+          <template
+            v-for="(areas, tipoPago) in balances_por_area"
+            :key="tipoPago"
+          >
+            <tr v-for="(monto, area) in areas" :key="area">
+              <td class="balance-tipo">{{ tipoPago }}</td>
+              <td class="balance-area">{{ area }}</td>
+              <td class="balance-monto">{{ monto }}</td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- Modal de Egresos -->
   <div v-if="mostrarModalEgresos" class="dialog">
     <button
@@ -198,10 +230,10 @@
         <div class="form-group">
           <label for="area">Área</label>
           <select v-model="nuevoEgreso.area" required>
-            <option value="recepcion">Recepción</option>
+            <option value="habitacion">Recepción</option>
             <option value="nevera">Nevera</option>
-            <option value="restaurante-bar">Restaurante-Bar</option>
-            <option value="EntregoAdmin">Entrego a Administración</option>
+            <option value="bar">Restaurante-Bar</option>
+            <!-- <option value="EntregoAdmin">Entrego a Administración</option> -->
           </select>
         </div>
         <!-- <div class="form-group">
@@ -223,6 +255,16 @@
             <option value="efectivo">Efectivo</option>
             <option value="tarjeta">Tarjeta</option>
             <option value="transferencia">Transferencia</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="destino">Destino</label>
+          <select v-model="nuevoEgreso.destino" required>
+            <option value="entrego_cuenta">Entredo de cuenta</option>
+            <option value="mantenimiento">Mantenimiento</option>
+            <option value="compras">Compras</option>
+            <option value="otros">Otros</option>
+            <!-- <option value="EntregoAdmin">Entrego a Administración</option> -->
           </select>
         </div>
         <div class="form-group">
@@ -840,7 +882,7 @@
             class="pedido-item"
           >
             <h3>Pedido ID: {{ pedido.id }}</h3>
-            <p>reserva: {{ pedido.reserva_id }}</p>
+            <p>Habitacion: {{ pedido.numero_habitacion }}</p>
             <p>Cliente: {{ pedido.nombre_cliente || "Sin nombre" }}</p>
             <p>Pendiente: {{ pedido.total }} $</p>
             <p>Total:{{ pedido.total_original }}</p>
@@ -1218,6 +1260,8 @@ export default {
   components: { FullCalendar },
   data() {
     return {
+      mostrarModalBalance: true,
+      balances_por_area: {},
       totalPersonas: 0, // Variable para almacenar el total de personas
       searchTerm: "", // Para almacenar el término de búsqueda
       mostrarModalClientes: false,
@@ -1242,6 +1286,7 @@ export default {
         tipo_egreso: "",
         cantidad: "",
         observacion: "",
+        destino: "",
         fecha: "",
       },
       closeModalDetallesR() {
@@ -1722,12 +1767,20 @@ export default {
         const response = await axios.get("/auth/balance-total");
         this.balanceTotal = response.data.balance_total;
         this.balanceDetalles = response.data.detalles.balance_por_tipo;
-        this.mostrarModalBalance = true; // Abre el modal después de obtener los datos
+        this.balances_por_area = response.data.detalles.balances_por_area;
+        this.mostrarModalBalance = false; // Abre el modal después de obtener los datos
         this.fetchEgresos();
       } catch (error) {
         console.error("Error al obtener el balance total:", error);
       }
     },
+    cerrarModalBalance() {
+      this.mostrarModalBalance = false;
+    },
+    abrirModalBalance() {
+      this.mostrarModalBalance = true;
+    },
+
     // Método para obtener el total de egresos de una categoría y tipo de pago específico
     obtenerEgreso(area, tipoEgreso) {
       return this.egresos
@@ -1746,6 +1799,7 @@ export default {
         tipo_egreso: "",
         cantidad: "",
         observacion: "",
+        destino: "",
         fecha: "",
       };
     },
@@ -1771,7 +1825,7 @@ export default {
         this.mostrarModalEgreso = false; // Cerrar el modal de egreso
         this.nuevoEgreso = {}; // Limpiar el formulario después de guardar
         this.obtenerBalanceTotal(); // Actualizar el balance total
-        this.realizarArqueoCaja(); // Actualizar el arqueo de caja
+        // this.realizarArqueoCaja(); // Actualizar el arqueo de caja
       } catch (error) {
         console.error("Error al registrar el egreso:", error);
         // Mensaje de error
