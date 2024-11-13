@@ -1380,11 +1380,11 @@ export default {
       },
       // Referencia de los estados de las reservas
       estadosReferencia: [
-        { nombre: "Pendiente", color: "#FFC107" }, // Amarillo
+        { nombre: "Pendiente", color: "blue" }, // azul
         { nombre: "Confirmada", color: "#28A745" }, // Verde
-        { nombre: "Ocupada", color: "#007BFF" }, // Azul
+        { nombre: "Ocupada", color: "red" }, // rojo
 
-        { nombre: "Reservada", color: "#6F42C1" }, // Púrpura
+        { nombre: "Reservada", color: "#ffc107" }, // Púrpura
         // Excluir "Cancelada" y "Completada" como solicitaste
       ],
       // Datos iniciales para el formulario de observación
@@ -1413,7 +1413,7 @@ export default {
         resourceLabelDidMount: (info) => {
           // Cambia el color al pasar el mouse
           info.el.addEventListener("mouseenter", () => {
-            info.el.style.backgroundColor = "#e0e0e0"; // Color al hacer hover
+            info.el.style.backgroundColor = "red"; // Color al hacer hover
           });
           info.el.addEventListener("mouseleave", () => {
             info.el.style.backgroundColor = ""; // Vuelve al color original
@@ -2510,7 +2510,10 @@ export default {
             start: reserva.fecha_check_in,
             end: fechaCheckOut,
             resourceId: reserva.habitacion_id,
-            classNames: [`event-${reserva.estado.toLowerCase()}`],
+            classNames: [
+              `event-${reserva.estado.toLowerCase().replace(/\s+/g, "")}`,
+            ],
+
             extendedProps: {
               estado: reserva.estado,
               creadoPor: `Creado por: ${creadoPor}`, // Almacena el nombre para el tooltip
@@ -2688,8 +2691,12 @@ select {
 /* Estilos para los diferentes estados de las reservas */
 /* Estilos para los diferentes estados de las reservas */
 .event-pendiente {
-  background-color: #ffc107 !important; /* Amarillo para pendiente */
+  background-color: blue !important; /* Amarillo para pendiente */
   border-color: #ffc107 !important;
+}
+.fc-h-event {
+  border-color: black !important;
+  background-color: #f44336;
 }
 
 .event-confirmada {
@@ -2698,18 +2705,22 @@ select {
 }
 
 .event-en-curso {
-  background-color: #007bff !important; /* Azul para en curso */
-  border-color: #007bff !important;
+  background-color: #ff0000 !important; /* Azul para en curso */
+  border-color: black !important;
+}
+.fc-event.event-en-curso {
+  background-color: #dc3545 !important;
+  border-color: black !important;
 }
 
 .event-reservada {
-  background-color: #6f42c1 !important; /* Púrpura para reservada */
-  border-color: #6f42c1 !important;
+  background-color: #ffc107 !important; /* Púrpura para reservada */
+  border-color: black !important;
 }
 
 .event-cancelada {
-  background-color: #dc3545 !important; /* Rojo para cancelada */
-  border-color: #dc3545 !important;
+  background-color: mediumorchid !important; /* Rojo para cancelada */
+  border-color: mediumorchid !important;
 }
 
 .event-completada {
