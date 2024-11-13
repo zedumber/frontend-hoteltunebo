@@ -1413,7 +1413,7 @@ export default {
         resourceLabelDidMount: (info) => {
           // Cambia el color al pasar el mouse
           info.el.addEventListener("mouseenter", () => {
-            info.el.style.backgroundColor = "red"; // Color al hacer hover
+            info.el.style.backgroundColor = "#e0e0e0"; // Color al hacer hover
           });
           info.el.addEventListener("mouseleave", () => {
             info.el.style.backgroundColor = ""; // Vuelve al color original
@@ -2696,23 +2696,13 @@ select {
 }
 .fc-h-event {
   border-color: black !important;
-  background-color: #f44336;
+  background-color: #fd4834 !important;
 }
 
 .event-confirmada {
   background-color: #28a745 !important; /* Verde para confirmada */
   border-color: #28a745 !important;
 }
-
-.event-en-curso {
-  background-color: #ff0000 !important; /* Azul para en curso */
-  border-color: black !important;
-}
-.fc-event.event-en-curso {
-  background-color: #dc3545 !important;
-  border-color: black !important;
-}
-
 .event-reservada {
   background-color: #ffc107 !important; /* Púrpura para reservada */
   border-color: black !important;
