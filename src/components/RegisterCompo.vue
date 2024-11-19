@@ -1,22 +1,27 @@
 <template>
   <div class="auth-container">
     <h2>Registro de Usuario</h2>
+    <!-- Notificaciones -->
+    <div v-if="successMessage" class="alert alert-success">
+      {{ successMessage }}
+    </div>
+    <div v-if="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
     <form @submit.prevent="registerUser">
+      <!-- Formulario igual que antes -->
       <div class="form-group">
         <label for="nombre">Nombre Completo:</label>
         <input type="text" v-model="nombre" id="nombre" required />
       </div>
-
       <div class="form-group">
         <label for="email">Correo Electrónico:</label>
         <input type="email" v-model="email" id="email" required />
       </div>
-
       <div class="form-group">
         <label for="password">Contraseña:</label>
         <input type="password" v-model="password" id="password" required />
       </div>
-
       <div class="form-group">
         <label for="password_confirmation">Confirmar Contraseña:</label>
         <input
@@ -36,7 +41,6 @@
           <option value="gerente">gerente</option>
         </select>
       </div>
-
       <div class="form-group">
         <label for="telefono">Telefono:</label>
         <input type="text" v-model="telefono" id="telefono" required />
@@ -50,7 +54,6 @@
           required
         />
       </div>
-
       <button type="submit" class="btn-auth">Registrarse</button>
     </form>
     <p>
@@ -74,10 +77,14 @@ export default {
       telefono: "",
       documento_identidad: "",
       roll: "",
+      successMessage: "",
+      errorMessage: "",
     };
   },
   methods: {
     async registerUser() {
+      this.successMessage = "";
+      this.errorMessage = "";
       try {
         const response = await axios.post("auth/register", {
           name: this.nombre,
@@ -88,11 +95,27 @@ export default {
           telefono: this.telefono,
           documento_identidad: this.documento_identidad,
         });
+        this.successMessage = "Usuario registrado exitosamente.";
         console.log("Usuario registrado:", response.data);
-        // Puedes redirigir al usuario o guardar el token en localStorage
-        // this.$router.push('/login'); // Ejemplo para redirigir a login
       } catch (error) {
-        console.error("Error en el registro:", error.response.data);
+        // Validar si error.response existe
+        if (error.response) {
+          // Si el backend envía errores de validación
+          const errors = error.response.data;
+          if (typeof errors === "string") {
+            this.errorMessage = errors;
+          } else if (typeof errors === "object") {
+            this.errorMessage = Object.values(errors).join(", ");
+          }
+        } else if (error.request) {
+          // Si el error ocurre por problemas de red
+          this.errorMessage =
+            "No se pudo conectar al servidor. Verifica tu conexión.";
+        } else {
+          // Si el error ocurre por algo inesperado
+          this.errorMessage = "Ocurrió un error inesperado.";
+        }
+        console.error("Error en el registro:", error.message);
       }
     },
   },

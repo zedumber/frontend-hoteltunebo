@@ -71,6 +71,7 @@
           <th>Total Pago</th>
           <th>Tipo de pago</th>
           <th>Entregado admin</th>
+          <th>Fecha</th>
         </tr>
       </thead>
       <tbody>
@@ -99,6 +100,7 @@
             }}
           </td>
           <td>{{ reserva.entregado_a_administracion ? "Sí" : "No" }}</td>
+          <td>{{ formatFecha(reserva.created_at) }}</td>
         </tr>
       </tbody>
       <tfoot>
@@ -159,6 +161,7 @@
         <th>Total Pago</th>
         <th>Propina</th>
         <th>Entregado admin</th>
+        <th>Fecha</th>
       </tr>
     </thead>
     <tbody>
@@ -173,6 +176,7 @@
         <td>{{ formatCurrency(pedido.total_original) }}</td>
         <td>{{ formatCurrency(pedido.propina) }}</td>
         <td>{{ pedido.entregado_a_administracion ? "Sí" : "No" }}</td>
+        <td>{{ formatFecha(pedido.created_at) }}</td>
       </tr>
     </tbody>
     <tfoot>
@@ -197,6 +201,7 @@
         <th>Método de Pago</th>
         <th>Total Pago</th>
         <th>Entregado al admin</th>
+        <th>Fecha</th>
       </tr>
     </thead>
     <tbody>
@@ -209,6 +214,7 @@
         <td>{{ nevera.metodo_pago }}</td>
         <td>{{ formatCurrency(nevera.total_original) }}</td>
         <td>{{ nevera.entregado_a_administracion ? "Sí" : "No" }}</td>
+        <td>{{ formatFecha(nevera.created_at) }}</td>
       </tr>
     </tbody>
     <tfoot>
@@ -507,6 +513,14 @@ export default {
     },
   },
   methods: {
+    formatFecha(fecha) {
+      const date = new Date(fecha);
+      return date.toLocaleDateString("es-ES", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    },
     filtradoAdminEntregado() {
       this.reservasFiltradas = this.reservas.filter((reserva) => {
         return (
