@@ -1112,6 +1112,19 @@
           </select>
         </div>
 
+        <div class="form-group">
+          <label for="origen_reserva">Origen de Reserva:</label>
+          <select v-model="crearreserva.origen_reserva" required>
+            <option value="booking">Booking</option>
+            <option value="Presencial">Presencial</option>
+            <option value="Teléfono">Teléfono</option>
+            <option value="whastapp">Whastapp</option>
+            <option value="instagran">Instagram</option>
+            <option value="facebook">Facebook</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+
         <button type="submit" class="btn btn-primary">Confirmar Reserva</button>
       </form>
     </div>
@@ -1437,6 +1450,9 @@ export default {
           // Almacena el contenido del tooltip
           const tooltipText = info.event.extendedProps.creadoPor || "";
           const tooltipPago = info.event.extendedProps.pagoRealizado || "";
+          const tooltipOrigen = info.event.extendedProps.origenReserva
+            ? `Origen: ${info.event.extendedProps.origenReserva}`
+            : "Origen no especificado";
 
           // Crea el tooltip al pasar el mouse
           info.el.addEventListener("mouseenter", () => {
@@ -1448,12 +1464,17 @@ export default {
             tooltip.style.position = "absolute";
             tooltip.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
             tooltip.style.color = "white";
-            tooltip.style.padding = "5px";
-            tooltip.style.borderRadius = "4px";
-            tooltip.style.fontSize = "12px";
+            tooltip.style.padding = "10px";
+            tooltip.style.borderRadius = "12px";
+            tooltip.style.fontSize = "16px";
             tooltip.style.zIndex = "1000";
             //tooltip.textContent = tooltipText;
-            tooltip.innerHTML = `<strong>${tooltipText}</strong><br>${tooltipPago}`; // Muestra ambas informaciones
+            // Añade el contenido del tooltip (incluyendo origen)
+            tooltip.innerHTML = `
+      <strong>${tooltipText}</strong><br>
+      ${tooltipPago}<br>
+      ${tooltipOrigen}
+    `;
 
             // Agrega el tooltip al DOM
             document.body.appendChild(tooltip);
@@ -1507,6 +1528,7 @@ export default {
       checkInDate: "",
       checkOutDate: "",
       numeroPersonas: "",
+      // origen_reserva: "",
       totalPago: "",
       messageType: "",
       message: "",
@@ -1520,6 +1542,7 @@ export default {
         fecha_check_in: "",
         fecha_check_out: "",
         estado: "",
+        origen_reserva: "",
       },
     };
   },
@@ -2375,6 +2398,7 @@ export default {
         numero_personas: this.crearreserva.numero_personas,
         total_pago: this.crearreserva.total_pago,
         estado: this.crearreserva.estado,
+        origen_reserva: this.crearreserva.origen_reserva,
       };
 
       axios
@@ -2386,6 +2410,7 @@ export default {
         .then(() => {
           this.showNotification("Reserva realizada exitosamente.", "success");
           this.obtenerHuespedesEnCurso(); // Actualizar la lista de huéspedes
+          this.limpiarFormulario(); // Limpiar el formulario
           this.showReservaModal = false;
           this.reserva = {
             fecha_check_in: "",
@@ -2394,6 +2419,7 @@ export default {
             numero_personas: null,
             total_pago: null,
             estado: "",
+            origen_reserva: "",
           };
           this.fetchHabitaciones(); // Actualizar lista de habitaciones
           this.fetchReservas(); // actualizar lista de reservas
@@ -2407,6 +2433,20 @@ export default {
             "Hubo un problema al registrar el egreso.";
           this.showNotificationModal = true;
         });
+    },
+    //limpiar el formulario de crear reserva
+    limpiarFormulario() {
+      this.crearreserva = {
+        cliente_id: null,
+        numero_personas: "",
+        total_pago: 0,
+        fecha_check_in: "",
+        fecha_check_out: "",
+        estado: "",
+        origen_reserva: "",
+      };
+      this.searchTerm = "";
+      this.filteredClientes = [];
     },
 
     showNotification(message, type) {
@@ -2518,6 +2558,7 @@ export default {
               estado: reserva.estado,
               creadoPor: `Creado por: ${creadoPor}`, // Almacena el nombre para el tooltip
               pagoRealizado: pagoRealizado, // Almacena el pago realizado para el tooltip
+              origenReserva: reserva.origen_reserva,
             },
           };
         });
